@@ -53,31 +53,38 @@ app.get("/compose",function(req,res){
   res.render("compose",);
   });
 
-app.post("/compose", function(req,res){
-  const post = new Post ({
+app.post("/compose", function(req, res) {
+  const post = new Post({
     title: req.body.postTitle,
     content: req.body.postBody
-  });
-  post.save(function(err){
-    if (!err){
-      res.redirect("/");
-    }
-  });
 });
 
-app.get("/posts/:postId", function(req, res){
-
-  const requestedPostId = req.params.postId;
-  
-    Post.findOne({_id: requestedPostId}, function(err, post){
-      res.render("post", {
-        title: post.title,
-        content: post.content
-      });
+  post.save()
+    .then(() => res.redirect("/"))
+    .catch(err => {
+      console.error(err);
+      res.status(500).send("Error saving post");
     });
-  
-  });
+});
 
+app.get("/posts/:postId", async function(req, res) {
+  try {
+    const requestedPostId = req.params.postId;
+    const post = await Post.findOne({ _id: requestedPostId });
+
+    if (!post) {
+      return res.status(404).send("Post not found");
+    }
+
+    res.render("post", {
+      title: post.title,
+      content: post.content
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error retrieving post");
+  }
+});
 
 app.listen(process.env.PORT || 3000, function() {
   console.log("Server started on port 3000");
