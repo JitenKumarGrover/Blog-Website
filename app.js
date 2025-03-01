@@ -26,16 +26,19 @@ const postSchema = {
   content: String
  };
 
- const Post = mongoose.model("Post", postSchema);
- 
+const Post = mongoose.model("Post", postSchema);
 
-app.get("/",function(req,res){
-Post.find({}, function(err, posts){
+app.get("/", async function (req, res) {
+  try {
+    const posts = await Post.find({}); // Use async/await instead of a callback
     res.render("home", {
       startingContent: homeStartingContent,
       posts: posts
-      });
-  });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 app.get("/about",function(req,res){
